@@ -11,7 +11,9 @@ A DIY smart fermentation box for homebrewing, pickling, or fermenting foods, wit
 You will need the following parts to build the box:
 - 1x **Arduino Uno** (or compatible board)
 - 1x **12V Fan** (for ventilation)
+- 1x **Liquid Crystal Display** (for displaying data)
 - 1x **Potentiometer** (to adjust set temperature)
+- 1x **0.1 µF to 1 µF capacitor** (to act as a low pass filter which reduces jittering from the potentiometer)
 - 1x **RGB LED** (common cathode or anode, Arduino-compatible)
 - 1x **Heating Mat** (wall-powered with a relay or switch)
 - 1x **Insulated Container** (cooler, mini fridge, or foam box)
@@ -24,8 +26,8 @@ You will need the following parts to build the box:
 Follow these steps to set up the project locally:
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/your-username/ferment-cabinet.git
-   cd ferment-cabinet
+   git clone https://github.com/A-Alanen/brewbox.git
+   cd brewbox
     ```
 
 2. **Install Arduino IDE**
