@@ -12,8 +12,7 @@ You will need the following parts to build the box:
 - 1x **Arduino Uno** (or compatible board)
 - 1x **12V Fan** (for ventilation)
 - 1x **Liquid Crystal Display** (for displaying data)
-- 1x **Potentiometer** (to adjust set temperature)
-- 1x **0.1 µF to 1 µF capacitor** (to act as a low pass filter which reduces jittering from the potentiometer)
+- 4x **Buttons** (for navigating the menu and adjusting settings)
 - 1x **RGB LED** (common cathode or anode, Arduino-compatible)
 - 1x **Heating Mat** (wall-powered with a relay or switch)
 - 1x **Insulated Container** (cooler, mini fridge, or foam box)
@@ -49,7 +48,7 @@ Follow these steps to set up the project locally:
 
 ## Usage
 Once your hardware is set up and the code is uploaded:
-    Turn the potentiometer to set the desired temperature threshold.
+    Set the desired temperature, fan duration, heating mat duration and off duration thresholds.
     The heating mat turns on automatically when the temperature drops below the threshold.
     The fan activates to circulate air as needed.
     The RGB LED indicates system status:

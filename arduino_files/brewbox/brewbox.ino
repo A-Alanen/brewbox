@@ -1,42 +1,72 @@
+// ===== File: brewbox.ino =====
 #include <Arduino.h>
-#include <LiquidCrystal.h>  // Add this to support LCD
 
-// LCD pin configuration (RS, E, D4, D5, D6, D7)
-LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
+// External functions and variables
+extern void setupDisplay();
+extern void showIdleScreen(int setTemp, int currentTemp);
+extern void showMainMenu(int index);
+extern void testLcdZones();
+extern void updateRelays();
+extern void handleInput();
+extern bool anyButtonPressed();
+extern int currentTemp;
 
-const int potPin = A0;       // Analog pin A0
-int potValue = 0;            // Variable to store potentiometer value
-int temperature = 0;         // Mapped temperature value
-int lastTemperature = 0;     // Previous temperature value
+// Button pins
+#define BUTTON_UP     A0
+#define BUTTON_DOWN   A1
+#define BUTTON_SELECT A2
+#define BUTTON_BACK   A3
+
+// Menu state enum
+enum MenuState {
+  MAIN_MENU,
+  SET_TEMP,
+  FAN_DURATION,
+  HEAT_DURATION,
+  SET_DELAY,
+  IDLE_SCREEN
+};
+
+MenuState currentState = MAIN_MENU;
+unsigned long lastInputTime = 0;
+const unsigned long IDLE_TIMEOUT = 10000UL;
+
+// Settings
+int setTemperature = 25;
+int fanDuration = 5;
+int heatDuration = 5;
+int relayDelay = 10;
+int menuIndex = 0;
+const int menuItems = 4;
 
 void setup() {
-  Serial.begin(9600);
-  lcd.begin(16, 2);         // 16 columns, 2 rows
-  lcd.clear();
+  setupDisplay();
+  testLcdZones();
+  while (false);
+  pinMode(BUTTON_UP, INPUT_PULLUP);
+  pinMode(BUTTON_DOWN, INPUT_PULLUP);
+  pinMode(BUTTON_SELECT, INPUT_PULLUP);
+  pinMode(BUTTON_BACK, INPUT_PULLUP);
+  showMainMenu(menuIndex);
 }
 
 void loop() {
-  const int samples = 10;
-  long sum = 0;
+  // update currentTemp from sensor
+  readTemperature();
 
-  for (int i = 0; i < samples; i++) {
-    sum += analogRead(potPin);
-    delay(2);
+  handleInput();
+  updateRelays();
+
+  if (millis() - lastInputTime > IDLE_TIMEOUT && currentState != IDLE_SCREEN) {
+    currentState = IDLE_SCREEN;
+    showIdleScreen(setTemperature, currentTemp);
   }
 
-  potValue = sum / samples;
-  temperature = map(potValue, 0, 1023, 18, 30);
-
-  if (abs(temperature - lastTemperature) >= 1) {
-    Serial.print("Temperature:");
-    Serial.print(temperature);
-    Serial.println("°C");
-
-    lastTemperature = temperature;
-
-    // Call display function
-    updateLCD();
+  if (currentState == IDLE_SCREEN && anyButtonPressed()) {
+    currentState = MAIN_MENU;
+    menuIndex = 0;
+    showMainMenu(menuIndex);
+    lastInputTime = millis();
+    delay(200);
   }
-
-  delay(100);
 }
