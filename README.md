@@ -1,5 +1,5 @@
 # brewbox
-A DIY smart fermentation box for homebrewing, pickling, or fermenting foods, with automatic temperature control, fan ventilation, and RGB status lighting. Built using Arduino and basic electronic components.
+A DIY smart fermentation box for homebrewing, pickling, or fermenting foods, with automatic temperature control and fan ventilation. Built using Arduino and basic electronic components.
 
 ## Table of Contents
 - [Component List](#component-list)
@@ -9,17 +9,17 @@ A DIY smart fermentation box for homebrewing, pickling, or fermenting foods, wit
 
 ## Component List
 You will need the following parts to build the box:
-- 1x **Arduino Uno** (or compatible board)
+- 1x **Arduino Nano** (or compatible board)
 - 1x **12V Fan** (for ventilation)
 - 1x **Liquid Crystal Display** (for displaying data)
 - 4x **Buttons** (for navigating the menu and adjusting settings)
-- 1x **RGB LED** (common cathode or anode, Arduino-compatible)
 - 1x **Heating Mat** (wall-powered with a relay or switch)
 - 1x **Insulated Container** (cooler, mini fridge, or foam box)
 - 1x **12V Power Supply** (for the fan)
 - 1x **2 Channel Relay Module** (to switch heating mat and fan on/off)
+- 1x **Buzzer** (For alarming if the temperature goes dangerously high)
 - Jumper wires, breadboard or soldered PCB
-- Temperature sensor (e.g., **DHT22** or **DS18B20**)
+- Temperature sensor (e.g., **DHT22** or **DS18B20**) I am using **DHT22**
 
 ## Installation
 Follow these steps to set up the project locally:
@@ -51,11 +51,6 @@ Once your hardware is set up and the code is uploaded:
     Set the desired temperature, fan duration, heating mat duration and off duration thresholds.
     The heating mat turns on automatically when the temperature drops below the threshold.
     The fan activates to circulate air as needed.
-    The RGB LED indicates system status:
-        Blue: Cooling
-        Red: Heating
-        Green: Stable (ideal temp reached)
-Customize the RGB behavior or control logic in the Arduino code to fit your fermentation needs.
 Place your fermenting container inside the insulated chamber and monitor the environment with optional temperature readouts.
 
 ## License
