@@ -1,4 +1,5 @@
 // ===== File: input.ino =====
+#include "pins.h"
 extern MenuState currentState;
 extern int setTemperature, fanDuration, heatDuration, relayDelay;
 extern int menuIndex;

@@ -1,21 +1,24 @@
 // ===== File: brewbox.ino =====
 #include <Arduino.h>
-
+#include "pins.h"
 // External functions and variables
+extern void setupSensor();
 extern void setupDisplay();
 extern void showIdleScreen(int setTemp, int currentTemp);
 extern void showMainMenu(int index);
 extern void testLcdZones();
 extern void updateRelays();
 extern void handleInput();
+extern void showWarning(int temp);
+extern void readTemperature();
+extern bool isOverheated();
 extern bool anyButtonPressed();
 extern int currentTemp;
 
-// Button pins
-#define BUTTON_UP     A0
-#define BUTTON_DOWN   A1
-#define BUTTON_SELECT A2
-#define BUTTON_BACK   A3
+// Buzzer functions
+extern void setupBuzzer();
+extern void updateBuzzer();
+extern void stopBuzzer();
 
 // Menu state enum
 enum MenuState {
@@ -39,6 +42,8 @@ int relayDelay = 10;
 int menuIndex = 0;
 const int menuItems = 4;
 
+bool safetyLatched = false;
+
 void setup() {
   setupDisplay();
   testLcdZones();
@@ -47,15 +52,41 @@ void setup() {
   pinMode(BUTTON_DOWN, INPUT_PULLUP);
   pinMode(BUTTON_SELECT, INPUT_PULLUP);
   pinMode(BUTTON_BACK, INPUT_PULLUP);
+  pinMode(RELAY_FAN, OUTPUT);
+  pinMode(RELAY_HEATER, OUTPUT);
+  digitalWrite(RELAY_FAN, LOW);
+  digitalWrite(RELAY_HEATER, LOW);
+
+  setupBuzzer();
+  setupSensor();
   showMainMenu(menuIndex);
+}
+
+void safetyShutdown() {
+  safetyLatched = true;
+
+  // Force heater off, fan on
+  digitalWrite(RELAY_HEATER, LOW);
+  digitalWrite(RELAY_FAN, HIGH);
+
+  // Buzzer & LCD warning
+  updateBuzzer();
+  showWarning(currentTemp);
 }
 
 void loop() {
   // update currentTemp from sensor
   readTemperature();
 
+  // Safety check
+  if (isOverheated() || safetyLatched) {
+    safetyShutdown();   // latched mode
+    return;             // skip rest of loop
+  }
+
   handleInput();
   updateRelays();
+  stopBuzzer();
 
   if (millis() - lastInputTime > IDLE_TIMEOUT && currentState != IDLE_SCREEN) {
     currentState = IDLE_SCREEN;

@@ -1,8 +1,10 @@
 // ===== File: display.ino =====
+#include "pins.h"
 #include <LiquidCrystal.h>
 
-LiquidCrystal lcd(7, 8, 9, 10, 11, 12);
-int currentTemp = 24;
+extern int currentTemp;
+
+LiquidCrystal lcd(LCD_7, LCD_8, LCD_9, LCD_10, LCD_11, LCD_12);
 
 void setupDisplay() {
   lcd.begin(16, 2);
@@ -33,7 +35,7 @@ void showMainMenu(int index) {
 void showSetTemp(int temp) {
   char line1[9], line2[9];
   snprintf(line1, 9, "SetTemp:");
-  snprintf(line2, 9, "%2d%cC    ", temp, 223);
+  snprintf(line2, 9, "%2d%cC    ", temp, 223);  // 223 is ° symbol
   printTwoLines(line1, line2);
 }
 
@@ -62,6 +64,13 @@ void showIdleScreen(int setTemp, int currentTemp) {
   char line1[9], line2[9];
   snprintf(line1, 9, "Set:%2d%cC", setTemp, 223);
   snprintf(line2, 9, "Now:%2d%cC", currentTemp, 223);
+  printTwoLines(line1, line2);
+}
+
+void showWarning(int temp) {
+  char line1[9], line2[9];
+  snprintf(line1, 9, "WARNING!");
+  snprintf(line2, 9, "%2d%cC", temp, 223);
   printTwoLines(line1, line2);
 }
 
