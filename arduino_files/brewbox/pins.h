@@ -2,17 +2,16 @@
 #ifndef PINS_H
 #define PINS_H
 
-//Sensor pin
+#include <LiquidCrystal.h>
+#include <DHT.h>
+
 #define DHT_PIN 2
 
-// Relay pins
 #define RELAY_FAN 4
 #define RELAY_HEATER  5
 
-// Buzzer pin
 #define BUZZER_PIN  6
 
-// Button pins
 #define BUTTON_UP A0
 #define BUTTON_DOWN A1
 #define BUTTON_SELECT A2

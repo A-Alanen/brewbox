@@ -16,8 +16,8 @@ You will need the following parts to build the box:
 - 1x **Heating Mat** (wall-powered with a relay or switch)
 - 1x **Insulated Container** (cooler, mini fridge, or foam box)
 - 1x **12V Power Supply** (for the fan)
-- 1x **2 Channel Relay Module** (to switch heating mat and fan on/off)
-- 1x **Buzzer** (For alarming if the temperature goes dangerously high)
+- 1x **2 Channel Relay Module** (to switch heating mat and fan on/off) **The code assumes that the relay module is active low**
+- 1x **Buzzer** (For button pree sounds and for alarming if the temperature goes dangerously high)
 - Jumper wires, breadboard or soldered PCB
 - Temperature sensor (e.g., **DHT22** or **DS18B20**) I am using **DHT22**
 
@@ -39,6 +39,9 @@ Follow these steps to set up the project locally:
 
 4. **Install Libraries (if needed)**
     Some sensors may require external libraries (e.g., Adafruit's DHT library)
+    I use:
+    - **DHT sensor library** by Adafruit (for DHT22 temperature/humidity sensor)
+    - **LiquidCrystal** library (for LCD display)
     Use Library Manager in Arduino IDE (Sketch > Include Library > Manage Libraries...)
 
 5. **Upload to Arduino**
@@ -48,7 +51,7 @@ Follow these steps to set up the project locally:
 
 ## Usage
 Once your hardware is set up and the code is uploaded:
-    Set the desired temperature, fan duration, heating mat duration and off duration thresholds.
+    Set the desired temperature, hysteresis, fan duration, heating mat duration and off duration thresholds.
     The heating mat turns on automatically when the temperature drops below the threshold.
     The fan activates to circulate air as needed.
 Place your fermenting container inside the insulated chamber and monitor the environment with optional temperature readouts.

@@ -1,4 +1,5 @@
 // ===== File: display.ino =====
+#include "config.h"
 #include "pins.h"
 #include <LiquidCrystal.h>
 
@@ -28,7 +29,8 @@ void showMainMenu(int index) {
     case 0: printTwoLines(">SetTemp", "        "); break;
     case 1: printTwoLines(">FanTime", "        "); break;
     case 2: printTwoLines(">HeatDur", "        "); break;
-    case 3: printTwoLines(">Delay", "        "); break;
+    case 3: printTwoLines(">SetWait", "        "); break;
+    case 4: printTwoLines(">SetHyst", "   "); break;
   }
 }
 
@@ -48,7 +50,7 @@ void showFanDuration(int seconds) {
 
 void showHeatDuration(int seconds) {
   char line1[9], line2[9];
-  snprintf(line1, 9, "HeatTime:");
+  snprintf(line1, 9, "HeatDur:");
   snprintf(line2, 9, "%2ds     ", seconds);
   printTwoLines(line1, line2);
 }
@@ -57,6 +59,13 @@ void showDelay(int seconds) {
   char line1[9], line2[9];
   snprintf(line1, 9, "Delay:");
   snprintf(line2, 9, "%2ds     ", seconds);
+  printTwoLines(line1, line2);
+}
+
+void showHysteresis(int hys) {
+  char line1[9], line2[9];
+  snprintf(line1, 9, "Hyst:");
+  snprintf(line2, 9, "%2dC      ", hys, 223);
   printTwoLines(line1, line2);
 }
 
@@ -72,12 +81,4 @@ void showWarning(int temp) {
   snprintf(line1, 9, "WARNING!");
   snprintf(line2, 9, "%2d%cC", temp, 223);
   printTwoLines(line1, line2);
-}
-
-void testLcdZones() {
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  for (int i = 0; i < 8; i++) lcd.print(i);
-  lcd.setCursor(0, 1);
-  for (int i = 0; i < 8; i++) lcd.print(i);
 }

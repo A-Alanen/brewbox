@@ -1,87 +1,85 @@
 // ===== File: brewbox.ino =====
 #include <Arduino.h>
+#include "config.h"
 #include "pins.h"
-// External functions and variables
+
+// Sensor
 extern void setupSensor();
+extern void readTemperature();
+extern bool isOverheated();
+extern int currentTemp;
+
+// Display
 extern void setupDisplay();
 extern void showIdleScreen(int setTemp, int currentTemp);
 extern void showMainMenu(int index);
-extern void testLcdZones();
-extern void updateRelays();
-extern void handleInput();
 extern void showWarning(int temp);
-extern void readTemperature();
-extern bool isOverheated();
-extern bool anyButtonPressed();
-extern int currentTemp;
 
-// Buzzer functions
+// Buttons
+extern bool anyButtonPressed();
+extern void handleInput();
+
+// Relay
+extern void updateRelays();
+
+// Buzzer
 extern void setupBuzzer();
 extern void updateBuzzer();
 extern void stopBuzzer();
 
-// Menu state enum
-enum MenuState {
-  MAIN_MENU,
-  SET_TEMP,
-  FAN_DURATION,
-  HEAT_DURATION,
-  SET_DELAY,
-  IDLE_SCREEN
-};
-
+// Menu state
+enum MenuState { MAIN_MENU, SET_TEMP, FAN_DURATION, HEAT_DURATION, SET_DELAY, SET_HYSTERESIS, IDLE_SCREEN };
 MenuState currentState = MAIN_MENU;
-unsigned long lastInputTime = 0;
-const unsigned long IDLE_TIMEOUT = 10000UL;
 
 // Settings
-int setTemperature = 25;
-int fanDuration = 5;
-int heatDuration = 5;
-int relayDelay = 10;
-int menuIndex = 0;
-const int menuItems = 4;
+int currentTemp = DEFAULT_SET_TEMPERATURE;
+int setTemperature = DEFAULT_SET_TEMPERATURE;
+int fanDuration = DEFAULT_FAN_DURATION;
+int heatDuration = DEFAULT_HEAT_DURATION;
+int relayDelay = DEFAULT_RELAY_DELAY;
+int hysteresis = DEFAULT_HYSTERESIS;
+int menuIndex = DEFAULT_MENU_INDEX;
+const int menuItems = MENU_ITEMS;
 
+// Timing
+unsigned long lastInputTime = 0;
+unsigned long idleTimeout = IDLE_TIMEOUT;
+
+// Safety
 bool safetyLatched = false;
 
 void setup() {
   setupDisplay();
-  testLcdZones();
-  while (false);
   pinMode(BUTTON_UP, INPUT_PULLUP);
   pinMode(BUTTON_DOWN, INPUT_PULLUP);
   pinMode(BUTTON_SELECT, INPUT_PULLUP);
   pinMode(BUTTON_BACK, INPUT_PULLUP);
   pinMode(RELAY_FAN, OUTPUT);
   pinMode(RELAY_HEATER, OUTPUT);
-  digitalWrite(RELAY_FAN, LOW);
-  digitalWrite(RELAY_HEATER, LOW);
+  digitalWrite(RELAY_FAN, FAN_OFF);
+  digitalWrite(RELAY_HEATER, HEATER_OFF);
 
   setupBuzzer();
+  beepOnStartup();
   setupSensor();
   showMainMenu(menuIndex);
 }
 
 void safetyShutdown() {
   safetyLatched = true;
-
-  // Force heater off, fan on
-  digitalWrite(RELAY_HEATER, LOW);
-  digitalWrite(RELAY_FAN, HIGH);
-
-  // Buzzer & LCD warning
+  digitalWrite(RELAY_HEATER, HEATER_OFF);
+  digitalWrite(RELAY_FAN, FAN_ON);
   updateBuzzer();
   showWarning(currentTemp);
 }
 
 void loop() {
-  // update currentTemp from sensor
   readTemperature();
 
   // Safety check
   if (isOverheated() || safetyLatched) {
-    safetyShutdown();   // latched mode
-    return;             // skip rest of loop
+    safetyShutdown();
+    return;
   }
 
   handleInput();
@@ -95,7 +93,7 @@ void loop() {
 
   if (currentState == IDLE_SCREEN && anyButtonPressed()) {
     currentState = MAIN_MENU;
-    menuIndex = 0;
+    menuIndex = DEFAULT_MENU_INDEX;
     showMainMenu(menuIndex);
     lastInputTime = millis();
     delay(200);
