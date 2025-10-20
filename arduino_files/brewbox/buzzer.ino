@@ -56,6 +56,13 @@ void beepError() {
   playTone(BUZZER_DEFAULT_FREQ, 100);
 }
 
+// Long low tone for full system shutdown (sensor fail)
+void beepShutdown() {
+  playTone(600, 500);  // Lower frequency, longer duration
+  delay(100);
+  playTone(400, 500);  // Optional second tone for emphasis
+}
+
 // Beep when a button is pressed
 void beepOnButtonPress() {
   playTone(BUZZER_DEFAULT_FREQ, 100); // short 100 ms beep

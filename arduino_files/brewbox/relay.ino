@@ -4,6 +4,7 @@
 
 extern int currentTemp, setTemperature, fanDuration, heatDuration, relayDelay, hysteresis;
 extern bool safetyLatched;
+extern bool sensorFailActive;
 
 unsigned long lastRelayAction = 0;
 unsigned long heaterOnSince = 0;
@@ -13,6 +14,15 @@ bool fanOn = false;
 
 void updateRelays() {
   unsigned long now = millis();
+
+  // Safety: disable relays on sensor failure
+  if (sensorFailActive) {
+    digitalWrite(RELAY_HEATER, HEATER_OFF);
+    digitalWrite(RELAY_FAN, FAN_OFF);
+    heaterOn = false;
+    fanOn = false;
+    return;
+  }
 
   // Safety latch: force heater OFF, fan ON
   if (safetyLatched) {

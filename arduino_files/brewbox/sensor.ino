@@ -11,8 +11,14 @@ DHT dht(DHT_PIN, DHTTYPE);
 // Externals from other files
 extern LiquidCrystal lcd;
 extern void beepError();
+extern void beepShutdown();
 extern int currentTemp;
 extern MenuState currentState;
+
+// Safety tracking for sensor failure
+static unsigned long sensorFailStart = 0;
+static bool sensorFailActive = false;
+const unsigned long SENSOR_FAIL_TIMEOUT = 30000UL; // 30 seconds
 
 void setupSensor() {
   dht.begin();
@@ -32,28 +38,52 @@ void readTemperature() {
   if (!isnan(t)) {
     currentTemp = (int)(t + 0.5);
 
-    if (lastReadFailed) {
-      lastReadFailed = false;
+    // --- Sensor recovered ---
+    if (sensorFailActive) {
+      sensorFailActive = false;
+      lcd.clear();
+      lcd.setCursor(0, 0);
+      lcd.print("Sensor OK");
+      delay(1000);
       showIdleScreen(setTemperature, currentTemp);
     }
 
-    // Only update LCD if we are in the idle screen
+    sensorFailStart = 0;      // reset failure timer
+    lastReadFailed = false;
+
+    // Update screen if in idle
     if (currentState == IDLE_SCREEN) {
-      lcd.setCursor(0, 1); // bottom/right line
+      lcd.setCursor(0, 1); // bottom line
       lcd.print("Now:");
       lcd.print(currentTemp);
       lcd.print((char)223); // ° symbol
-      lcd.print("C   ");    // clear leftover chars
+      lcd.print("C   ");
     }
 
   } else {
+    // --- Failed reading ---
     if (!lastReadFailed) {
-      lcd.setCursor(0, 0);
-      lcd.print("Sensor  ");
-      lcd.setCursor(0, 1);
-      lcd.print("Fail!   ");
-      beepError();
       lastReadFailed = true;
+      sensorFailStart = now; // start timing failure
+    }
+
+    // Display fail message
+    lcd.setCursor(0, 0);
+    lcd.print("Sensor  ");
+    lcd.setCursor(0, 1);
+    lcd.print("Fail!   ");
+    beepError();
+
+    // If failed for more than 30 sec, activate safety
+    if (!sensorFailActive && (now - sensorFailStart >= SENSOR_FAIL_TIMEOUT)) {
+      sensorFailActive = true;
+      digitalWrite(RELAY_HEATER, HEATER_OFF);
+      digitalWrite(RELAY_FAN, FAN_OFF);
+      lcd.clear();
+      lcd.print("Relays  ");
+      lcd.setCursor(0, 1);
+      lcd.print("off     ");
+      beepShutdown();
     }
   }
 }
