@@ -2,9 +2,10 @@
 #include "config.h"
 #include "pins.h"
 
-extern int currentTemp, setTemperature, fanDuration, heatDuration, relayDelay, hysteresis;
+extern int currentTemp, setTemperature, fanDuration, heatDuration, hysteresis;
 extern bool safetyLatched;
 extern bool sensorFailActive;
+extern bool systemBusy;
 
 unsigned long lastRelayAction = 0;
 unsigned long heaterOnSince = 0;
@@ -15,12 +16,15 @@ bool fanOn = false;
 void updateRelays() {
   unsigned long now = millis();
 
+  systemBusy = true; 
+
   // Safety: disable relays on sensor failure
   if (sensorFailActive) {
     digitalWrite(RELAY_HEATER, HEATER_OFF);
     digitalWrite(RELAY_FAN, FAN_OFF);
     heaterOn = false;
     fanOn = false;
+    systemBusy = false;
     return;
   }
 
@@ -30,6 +34,7 @@ void updateRelays() {
     digitalWrite(RELAY_FAN, FAN_ON);
     heaterOn = false;
     fanOn = true;
+    systemBusy = false;
     return;
   }
  // Stop heater after its duration
@@ -45,9 +50,9 @@ void updateRelays() {
     fanOn = false;
     lastRelayAction = now;
   }
-
-  // If idle and relay delay has passed, decide action
-  if (!heaterOn && !fanOn && (now - lastRelayAction >= (unsigned long)relayDelay * 1000UL)) {
+  
+  // Hysteresis-based relay control
+  if (!heaterOn && !fanOn) {
     if (currentTemp >= setTemperature + hysteresis) {
       // Too hot → start fan cycle
       digitalWrite(RELAY_HEATER, HEATER_OFF);
@@ -57,10 +62,12 @@ void updateRelays() {
     } 
     else if (currentTemp <= setTemperature - hysteresis) {
       // Too cold → start heater cycle
-      digitalWrite(RELAY_FAN, FAN_OFF);
+      digitalWrite(RELAY_FAN, HEATER_OFF);
       digitalWrite(RELAY_HEATER, HEATER_ON);
       heaterOn = true;
       heaterOnSince = now;
     }
   }
+  
+  systemBusy = false;
 }

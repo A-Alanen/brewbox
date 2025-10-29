@@ -9,6 +9,7 @@
 DHT dht(DHT_PIN, DHTTYPE);
 
 // Externals from other files
+extern bool systemBusy;
 extern LiquidCrystal lcd;
 extern void beepError();
 extern void beepShutdown();
@@ -17,7 +18,7 @@ extern MenuState currentState;
 
 // Safety tracking for sensor failure
 static unsigned long sensorFailStart = 0;
-static bool sensorFailActive = false;
+bool sensorFailActive = false;
 const unsigned long SENSOR_FAIL_TIMEOUT = 30000UL; // 30 seconds
 
 void setupSensor() {
@@ -25,12 +26,15 @@ void setupSensor() {
 }
 
 void readTemperature() {
+  if (systemBusy) return;
+  
   static bool lastReadFailed = false;
   static unsigned long lastReadTime = 0;
+  static float lastGoodTemp = DEFAULT_SET_TEMPERATURE;
   unsigned long now = millis();
 
-  // Read every 2 seconds
-  if (now - lastReadTime < 2000) return;
+  // Read every 3 seconds
+  if (now - lastReadTime < 3000) return;
   lastReadTime = now;
 
   float t = dht.readTemperature();  // read in Celsius
@@ -41,15 +45,16 @@ void readTemperature() {
     // --- Sensor recovered ---
     if (sensorFailActive) {
       sensorFailActive = false;
+      sensorFailStart = 0;      // reset failure timer
+      lastReadFailed = false;
       lcd.clear();
       lcd.setCursor(0, 0);
-      lcd.print("Sensor OK");
+      lcd.print("Sensor");
+      lcd.setCursor(0,1);
+      lcd.print("OK");
       delay(1000);
       showIdleScreen(setTemperature, currentTemp);
     }
-
-    sensorFailStart = 0;      // reset failure timer
-    lastReadFailed = false;
 
     // Update screen if in idle
     if (currentState == IDLE_SCREEN) {
@@ -84,6 +89,8 @@ void readTemperature() {
       lcd.setCursor(0, 1);
       lcd.print("off     ");
       beepShutdown();
+      // Try to recover the sensor by reinitializing
+      dht.begin();  // Reinit the DHT22 to clear hang state
     }
   }
 }

@@ -8,10 +8,9 @@
 #define DEFAULT_SET_TEMPERATURE  25    // °C, target temperature
 #define DEFAULT_FAN_DURATION     300     // seconds, fan runtime
 #define DEFAULT_HEAT_DURATION    300     // seconds, heater runtime
-#define DEFAULT_RELAY_DELAY      5    // seconds, delay between relay cycles
 #define DEFAULT_HYSTERESIS       1     // °C, deadband for relay control
 
-#define MENU_ITEMS               5
+#define MENU_ITEMS               4
 #define SAFETY_TEMP              50    // °C, overheat cutoff
 
 #define IDLE_TIMEOUT             10000UL  // ms (10 seconds)

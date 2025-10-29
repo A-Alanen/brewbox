@@ -7,6 +7,7 @@
 extern void setupSensor();
 extern void readTemperature();
 extern bool isOverheated();
+extern bool sensorFailActive;
 extern int currentTemp;
 
 // Display
@@ -28,7 +29,7 @@ extern void updateBuzzer();
 extern void stopBuzzer();
 
 // Menu state
-enum MenuState { MAIN_MENU, SET_TEMP, FAN_DURATION, HEAT_DURATION, SET_DELAY, SET_HYSTERESIS, IDLE_SCREEN };
+enum MenuState { MAIN_MENU, SET_TEMP, FAN_DURATION, HEAT_DURATION, SET_HYSTERESIS, IDLE_SCREEN };
 MenuState currentState = MAIN_MENU;
 
 // Settings
@@ -36,7 +37,6 @@ int currentTemp = DEFAULT_SET_TEMPERATURE;
 int setTemperature = DEFAULT_SET_TEMPERATURE;
 int fanDuration = DEFAULT_FAN_DURATION;
 int heatDuration = DEFAULT_HEAT_DURATION;
-int relayDelay = DEFAULT_RELAY_DELAY;
 int hysteresis = DEFAULT_HYSTERESIS;
 int menuIndex = DEFAULT_MENU_INDEX;
 const int menuItems = MENU_ITEMS;
@@ -44,6 +44,8 @@ const int menuItems = MENU_ITEMS;
 // Timing
 unsigned long lastInputTime = 0;
 unsigned long idleTimeout = IDLE_TIMEOUT;
+
+bool systemBusy = false;
 
 // Safety
 bool safetyLatched = false;
@@ -66,11 +68,13 @@ void setup() {
 }
 
 void safetyShutdown() {
+  systemBusy = true;
   safetyLatched = true;
   digitalWrite(RELAY_HEATER, HEATER_OFF);
   digitalWrite(RELAY_FAN, FAN_ON);
   updateBuzzer();
   showWarning(currentTemp);
+  systemBusy = false;
 }
 
 void loop() {

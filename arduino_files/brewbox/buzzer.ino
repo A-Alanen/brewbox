@@ -3,6 +3,7 @@
 #include "pins.h"
 
 extern bool safetyLatched;
+extern bool systemBusy;
 
 // Setup buzzer pin
 void setupBuzzer() {
@@ -46,24 +47,32 @@ void stopBuzzer() {
 
 // Beep once at startup
 void beepOnStartup() {
+  systemBusy = true;
   playTone(BUZZER_DEFAULT_FREQ, 200);
+  systemBusy = false;
 }
 
 // Two quick peeps for DHT error
 void beepError() {
+  systemBusy = true;
   playTone(BUZZER_DEFAULT_FREQ, 100);
   delay(100);
   playTone(BUZZER_DEFAULT_FREQ, 100);
+  systemBusy = false;
 }
 
 // Long low tone for full system shutdown (sensor fail)
 void beepShutdown() {
+  systemBusy = true;
   playTone(600, 500);  // Lower frequency, longer duration
   delay(100);
   playTone(400, 500);  // Optional second tone for emphasis
+  systemBusy = false;
 }
 
 // Beep when a button is pressed
 void beepOnButtonPress() {
+  systemBusy = true;
   playTone(BUZZER_DEFAULT_FREQ, 100); // short 100 ms beep
+  systemBusy = false;
 }
